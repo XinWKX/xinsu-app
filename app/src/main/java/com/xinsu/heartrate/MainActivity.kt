@@ -99,6 +99,8 @@ class MainActivity : AppCompatActivity() {
 
         exportButton =
             findViewById(R.id.exportButton)
+            ecgView =
+    findViewById(R.id.ecgView)
 
         scanButton.setOnClickListener {
 
