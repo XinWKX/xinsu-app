@@ -1,5 +1,13 @@
 package com.xinsu.heartrate
 
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.BluetoothLeScanner
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
@@ -10,44 +18,70 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import kotlin.math.sin
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bpmText: TextView
+
     private lateinit var statusText: TextView
 
     private lateinit var scanButton: Button
+
     private lateinit var demoButton: Button
+
     private lateinit var exportButton: Button
 
-    private val handler = Handler(Looper.getMainLooper())
+    private val handler =
+        Handler(Looper.getMainLooper())
 
     private var currentBpm = 72
 
     private var demoRunning = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private var bluetoothAdapter:
+            BluetoothAdapter? = null
+
+    private var bleScanner:
+            BluetoothLeScanner? = null
+
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
 
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
 
-        bpmText = findViewById(R.id.bpmText)
-        statusText = findViewById(R.id.statusText)
+        val bluetoothManager =
+            getSystemService(
+                Context.BLUETOOTH_SERVICE
+            ) as BluetoothManager
 
-        scanButton = findViewById(R.id.scanButton)
-        demoButton = findViewById(R.id.demoButton)
-        exportButton = findViewById(R.id.exportButton)
+        bluetoothAdapter =
+            bluetoothManager.adapter
+
+        bpmText =
+            findViewById(R.id.bpmText)
+
+        statusText =
+            findViewById(R.id.statusText)
+
+        scanButton =
+            findViewById(R.id.scanButton)
+
+        demoButton =
+            findViewById(R.id.demoButton)
+
+        exportButton =
+            findViewById(R.id.exportButton)
 
         scanButton.setOnClickListener {
 
-            Toast.makeText(
-                this,
-                "BLE功能开发中",
-                Toast.LENGTH_SHORT
-            ).show()
+            startBleScan()
         }
 
         demoButton.setOnClickListener {
@@ -98,13 +132,16 @@ class MainActivity : AppCompatActivity() {
 
         if (!demoRunning) return
 
-        currentBpm = Random.nextInt(65, 95)
+        currentBpm =
+            Random.nextInt(65, 95)
 
-        bpmText.text = currentBpm.toString()
+        bpmText.text =
+            currentBpm.toString()
 
         playHeartbeatSound()
 
-        val interval = (60000f / currentBpm).toLong()
+        val interval =
+            (60000f / currentBpm).toLong()
 
         handler.postDelayed({
 
@@ -123,17 +160,26 @@ class MainActivity : AppCompatActivity() {
 
                 val duration = 80
 
-                val numSamples = duration * sampleRate / 1000
+                val numSamples =
+                    duration * sampleRate / 1000
 
-                val samples = ShortArray(numSamples)
+                val samples =
+                    ShortArray(numSamples)
 
                 for (i in samples.indices) {
 
                     val wave = sin(
-                        2.0 * Math.PI * i / (sampleRate / 85.0)
+                        2.0 * Math.PI *
+                                i /
+                                (sampleRate / 85.0)
                     )
 
-                    samples[i] = (wave * Short.MAX_VALUE * 0.18).toInt().toShort()
+                    samples[i] =
+                        (
+                                wave *
+                                        Short.MAX_VALUE *
+                                        0.18
+                                ).toInt().toShort()
                 }
 
                 val audioTrack = AudioTrack(
@@ -145,7 +191,11 @@ class MainActivity : AppCompatActivity() {
                     AudioTrack.MODE_STATIC
                 )
 
-                audioTrack.write(samples, 0, samples.size)
+                audioTrack.write(
+                    samples,
+                    0,
+                    samples.size
+                )
 
                 audioTrack.play()
 
@@ -160,4 +210,83 @@ class MainActivity : AppCompatActivity() {
 
         }.start()
     }
+
+    private fun startBleScan() {
+
+        if (bluetoothAdapter == null) {
+
+            statusText.text =
+                "设备不支持蓝牙"
+
+            return
+        }
+
+        if (!bluetoothAdapter!!.isEnabled) {
+
+            statusText.text =
+                "请先开启蓝牙"
+
+            return
+        }
+
+        val permissions = arrayOf(
+
+            Manifest.permission.BLUETOOTH_SCAN,
+
+            Manifest.permission.BLUETOOTH_CONNECT,
+
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+
+        val missing = permissions.filter {
+
+            ContextCompat.checkSelfPermission(
+                this,
+                it
+            ) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (missing.isNotEmpty()) {
+
+            ActivityCompat.requestPermissions(
+                this,
+                missing.toTypedArray(),
+                1001
+            )
+
+            statusText.text =
+                "正在请求蓝牙权限"
+
+            return
+        }
+
+        statusText.text =
+            "正在扫描设备..."
+
+        bleScanner =
+            bluetoothAdapter!!
+                .bluetoothLeScanner
+
+        bleScanner?.startScan(scanCallback)
+    }
+
+    private val scanCallback =
+        object : ScanCallback() {
+
+            override fun onScanResult(
+                callbackType: Int,
+                result: ScanResult
+            ) {
+
+                runOnUiThread {
+
+                    val name =
+                        result.device.name
+                            ?: "未知设备"
+
+                    statusText.text =
+                        "发现设备: $name"
+                }
+            }
+        }
 }
