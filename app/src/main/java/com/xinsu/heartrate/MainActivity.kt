@@ -122,9 +122,44 @@ class MainActivity : AppCompatActivity() {
 
         exportButton.setOnClickListener {
 
-            Toast.makeText(
-                this,
-                "日志系统开发中",
+            try {
+
+    val file = java.io.File(
+        filesDir,
+        "crash_log.txt"
+    )
+
+    if (file.exists()) {
+
+        val text = file.readText()
+
+        android.app.AlertDialog.Builder(this)
+
+            .setTitle("崩溃日志")
+
+            .setMessage(text)
+
+            .setPositiveButton("关闭", null)
+
+            .show()
+
+    } else {
+
+        Toast.makeText(
+            this,
+            "暂无崩溃日志",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+} catch (e: Exception) {
+
+    Toast.makeText(
+        this,
+        "读取日志失败",
+        Toast.LENGTH_SHORT
+    ).show()
+            }
                 Toast.LENGTH_SHORT
             ).show()
         }
