@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+
+    android:layout_height="wrap_content"
+
+    android:orientation="vertical"
+
+    android:padding="24dp"
+
+    android:background="#101010">
+
+    <TextView
+
+        android:layout_width="wrap_content"
+
+        android:layout_height="wrap_content"
+
+        android:text="设置"
+
+        android:textColor="#FFFFFF"
+
+        android:textSize="24sp"
+
+        android:textStyle="bold"
+
+        android:layout_marginBottom="20dp"/>
+
+    <Switch
+
+        android:id="@+id/soundSwitch"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:text="启用心跳音效"
+
+        android:textColor="#FFFFFF"
+
+        android:checked="true"
+
+        android:layout_marginBottom="16dp"/>
+
+    <Switch
+
+        android:id="@+id/waveSwitch"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:text="启用 ECG 波形"
+
+        android:textColor="#FFFFFF"
+
+        android:checked="true"/>
+
+</LinearLayout>
