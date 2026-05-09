@@ -1,22 +1,24 @@
 package com.xinsu.heartrate
 
 import android.Manifest
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.app.AlertDialog
 import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Bundle
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
-import android.view.animation.LinearInterpolator
 import android.os.Handler
 import android.os.Looper
+import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -30,17 +32,11 @@ import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bpmText: TextView
-
     private lateinit var statusText: TextView
-
     private lateinit var scanButton: Button
-
     private lateinit var demoButton: Button
-
     private lateinit var exportButton: Button
-
     private lateinit var settingsButton: Button
-
     private lateinit var ecgView: EcgView
 
     private val handler =
@@ -54,9 +50,6 @@ class MainActivity : AppCompatActivity() {
 
     private var waveEnabled = true
 
-    private var bpmAnimator:
-        ObjectAnimator? = null
-
     private var bluetoothAdapter:
             BluetoothAdapter? = null
 
@@ -66,7 +59,13 @@ class MainActivity : AppCompatActivity() {
     private var bluetoothGatt:
             BluetoothGatt? = null
 
+    private var lastDevice:
+            BluetoothDevice? = null
+
     private var audioTrack: AudioTrack? = null
+
+    private var bpmAnimator:
+            ObjectAnimator? = null
 
     private val scannedDevices =
         mutableListOf<BluetoothDevice>()
@@ -90,10 +89,22 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
+        window.setBackgroundDrawable(null)
+
+        window.statusBarColor =
+            Color.BLACK
+
         setContentView(R.layout.activity_main)
 
         Thread.setDefaultUncaughtExceptionHandler(
             CrashHandler(this)
+        )
+
+        startService(
+            Intent(
+                this,
+                HeartRateService::class.java
+            )
         )
 
         val bluetoothManager =
@@ -237,6 +248,8 @@ class MainActivity : AppCompatActivity() {
             playHeartbeatSound()
         }
 
+        startBpmAnimation()
+
         val interval =
             (60000f / currentBpm).toLong()
 
@@ -328,6 +341,46 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startBpmAnimation() {
+
+        bpmAnimator?.cancel()
+
+        val scaleX =
+            PropertyValuesHolder.ofFloat(
+
+                "scaleX",
+
+                1f,
+                1.06f,
+                1f
+            )
+
+        val scaleY =
+            PropertyValuesHolder.ofFloat(
+
+                "scaleY",
+
+                1f,
+                1.06f,
+                1f
+            )
+
+        bpmAnimator = ObjectAnimator.ofPropertyValuesHolder(
+
+            bpmText,
+
+            scaleX,
+            scaleY
+        )
+
+        bpmAnimator?.duration = 260
+
+        bpmAnimator?.interpolator =
+            LinearInterpolator()
+
+        bpmAnimator?.start()
+    }
+
     private fun startBleScan() {
 
         if (bluetoothAdapter == null) {
@@ -397,22 +450,29 @@ class MainActivity : AppCompatActivity() {
                 result: ScanResult
             ) {
 
-                runOnUiThread {
+                try {
 
-                    val device =
-                        result.device
+                    runOnUiThread {
 
-                    if (!scannedDevices.contains(device)) {
+                        val device =
+                            result.device
 
-                        scannedDevices.add(device)
+                        if (!scannedDevices.contains(device)) {
 
-                        statusText.text =
-                            "发现设备: ${
-                                device.name ?: "未知设备"
-                            }"
+                            scannedDevices.add(device)
 
-                        showDeviceList()
+                            statusText.text =
+                                "发现设备: ${
+                                    device.name ?: "未知设备"
+                                }"
+
+                            showDeviceList()
+                        }
                     }
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
                 }
             }
         }
@@ -447,6 +507,8 @@ class MainActivity : AppCompatActivity() {
         device: BluetoothDevice
     ) {
 
+        lastDevice = device
+
         statusText.text =
             "正在连接: ${
                 device.name ?: "未知设备"
@@ -469,25 +531,41 @@ class MainActivity : AppCompatActivity() {
                 newState: Int
             ) {
 
-                runOnUiThread {
+                try {
 
-                    if (newState ==
-                        BluetoothProfile.STATE_CONNECTED
-                    ) {
+                    runOnUiThread {
 
-                        statusText.text =
-                            "设备已连接"
+                        if (newState ==
+                            BluetoothProfile.STATE_CONNECTED
+                        ) {
 
-                        gatt.discoverServices()
+                            statusText.text =
+                                "设备已连接"
 
-                    } else if (
-                        newState ==
-                        BluetoothProfile.STATE_DISCONNECTED
-                    ) {
+                            gatt.discoverServices()
 
-                        statusText.text =
-                            "设备已断开"
+                        } else if (
+                            newState ==
+                            BluetoothProfile.STATE_DISCONNECTED
+                        ) {
+
+                            statusText.text =
+                                "设备已断开"
+
+                            handler.postDelayed({
+
+                                lastDevice?.let {
+
+                                    connectToDevice(it)
+                                }
+
+                            }, 3000)
+                        }
                     }
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
                 }
             }
 
@@ -496,22 +574,29 @@ class MainActivity : AppCompatActivity() {
                 status: Int
             ) {
 
-                val service =
-                    gatt.getService(
-                        HEART_RATE_SERVICE_UUID
-                    )
+                try {
 
-                val characteristic =
-                    service?.getCharacteristic(
-                        HEART_RATE_CHARACTERISTIC_UUID
-                    )
+                    val service =
+                        gatt.getService(
+                            HEART_RATE_SERVICE_UUID
+                        )
 
-                if (characteristic != null) {
+                    val characteristic =
+                        service?.getCharacteristic(
+                            HEART_RATE_CHARACTERISTIC_UUID
+                        )
 
-                    gatt.setCharacteristicNotification(
-                        characteristic,
-                        true
-                    )
+                    if (characteristic != null) {
+
+                        gatt.setCharacteristicNotification(
+                            characteristic,
+                            true
+                        )
+                    }
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
                 }
             }
 
@@ -520,48 +605,57 @@ class MainActivity : AppCompatActivity() {
                 characteristic: BluetoothGattCharacteristic
             ) {
 
-                if (
-                    characteristic.uuid ==
-                    HEART_RATE_CHARACTERISTIC_UUID
-                ) {
+                try {
 
-                    val flag =
-                        characteristic.properties
+                    if (
+                        characteristic.uuid ==
+                        HEART_RATE_CHARACTERISTIC_UUID
+                    ) {
 
-                    val format =
-                        if (flag and 0x01 != 0)
-                            BluetoothGattCharacteristic.FORMAT_UINT16
-                        else
-                            BluetoothGattCharacteristic.FORMAT_UINT8
+                        val flag =
+                            characteristic.properties
 
-                    val heartRate =
-                        characteristic.getIntValue(
-                            format,
-                            1
-                        ) ?: 0
+                        val format =
+                            if (flag and 0x01 != 0)
+                                BluetoothGattCharacteristic.FORMAT_UINT16
+                            else
+                                BluetoothGattCharacteristic.FORMAT_UINT8
 
-                    runOnUiThread {
+                        val heartRate =
+                            characteristic.getIntValue(
+                                format,
+                                1
+                            ) ?: 0
 
-                        currentBpm = heartRate
+                        runOnUiThread {
 
-                        bpmText.text =
-                            heartRate.toString()
+                            currentBpm = heartRate
 
-                        if (waveEnabled) {
+                            bpmText.text =
+                                heartRate.toString()
 
-                            ecgView.setHeartRate(
-                                heartRate
-                            )
-                        }
+                            if (waveEnabled) {
 
-                        statusText.text =
-                            "实时心率监测中"
+                                ecgView.setHeartRate(
+                                    heartRate
+                                )
+                            }
 
-                        if (soundEnabled) {
+                            statusText.text =
+                                "实时心率监测中"
 
-                            playHeartbeatSound()
+                            if (soundEnabled) {
+
+                                playHeartbeatSound()
+                            }
+
+                            startBpmAnimation()
                         }
                     }
+
+                } catch (e: Exception) {
+
+                    e.printStackTrace()
                 }
             }
         }
@@ -616,14 +710,56 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    override fun onRequestPermissionsResult(
+
+        requestCode: Int,
+
+        permissions: Array<out String>,
+
+        grantResults: IntArray
+    ) {
+
+        super.onRequestPermissionsResult(
+
+            requestCode,
+            permissions,
+            grantResults
+        )
+
+        if (requestCode == 1001) {
+
+            if (
+                grantResults.all {
+
+                    it ==
+                            PackageManager.PERMISSION_GRANTED
+                }
+            ) {
+
+                startBleScan()
+
+            } else {
+
+                statusText.text =
+                    "蓝牙权限被拒绝"
+            }
+        }
+    }
+
     override fun onDestroy() {
 
         super.onDestroy()
 
+        handler.removeCallbacksAndMessages(
+            null
+        )
+
+        bluetoothGatt?.disconnect()
+
+        bluetoothGatt?.close()
+
         audioTrack?.release()
 
         audioTrack = null
-
-        bluetoothGatt?.close()
     }
 }
