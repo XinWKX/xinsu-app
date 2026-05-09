@@ -99,8 +99,9 @@ class MainActivity : AppCompatActivity() {
 
         exportButton =
             findViewById(R.id.exportButton)
-            ecgView =
-    findViewById(R.id.ecgView)
+
+        ecgView =
+            findViewById(R.id.ecgView)
 
         scanButton.setOnClickListener {
 
@@ -160,6 +161,8 @@ class MainActivity : AppCompatActivity() {
 
         bpmText.text =
             currentBpm.toString()
+
+        ecgView.setHeartRate(currentBpm)
 
         playHeartbeatSound()
 
