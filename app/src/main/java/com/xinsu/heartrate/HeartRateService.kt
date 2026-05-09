@@ -1,70 +1,98 @@
 package com.xinsu.heartrate
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
-import android.content.Intent
-import android.os.Build
-import android.os.IBinder
+import android.bluetooth.*
+import android.content.Context
+import java.util.*
 
-class HeartRateService : Service() {
+class HeartRateService(private val context: Context) {
 
-    override fun onCreate() {
+    private var bluetoothGatt: BluetoothGatt? = null
 
-        super.onCreate()
+    companion object {
 
-        createNotification()
+        val HEART_RATE_SERVICE_UUID: UUID =
+            UUID.fromString(
+                "0000180d-0000-1000-8000-00805f9b34fb"
+            )
+
+        val HEART_RATE_CHARACTERISTIC_UUID: UUID =
+            UUID.fromString(
+                "00002a37-0000-1000-8000-00805f9b34fb"
+            )
     }
 
-    private fun createNotification() {
+    fun connect(device: BluetoothDevice) {
 
-        val channelId = "heartrate_service"
+        bluetoothGatt = device.connectGatt(
+            context,
+            false,
+            object : BluetoothGattCallback() {
 
-        if (Build.VERSION.SDK_INT >=
-            Build.VERSION_CODES.O
-        ) {
+                override fun onConnectionStateChange(
+                    gatt: BluetoothGatt,
+                    status: Int,
+                    newState: Int
+                ) {
 
-            val channel = NotificationChannel(
+                    if (newState ==
+                        BluetoothProfile.STATE_CONNECTED
+                    ) {
 
-                channelId,
+                        gatt.discoverServices()
+                    }
+                }
 
-                "心率监测",
+                override fun onServicesDiscovered(
+                    gatt: BluetoothGatt,
+                    status: Int
+                ) {
 
-                NotificationManager.IMPORTANCE_LOW
-            )
+                    val service =
+                        gatt.getService(
+                            HEART_RATE_SERVICE_UUID
+                        )
 
-            val manager =
-                getSystemService(
-                    NotificationManager::class.java
-                )
+                    val characteristic =
+                        service?.getCharacteristic(
+                            HEART_RATE_CHARACTERISTIC_UUID
+                        )
 
-            manager.createNotificationChannel(channel)
-        }
+                    if (characteristic != null) {
 
-        val notification =
-            Notification.Builder(
-                this,
-                channelId
-            )
+                        gatt.readCharacteristic(
+                            characteristic
+                        )
+                    }
+                }
 
-                .setContentTitle("心宿")
+                override fun onCharacteristicRead(
+                    gatt: BluetoothGatt,
+                    characteristic: BluetoothGattCharacteristic,
+                    value: ByteArray,
+                    status: Int
+                ) {
 
-                .setContentText("正在后台监测心率")
+                    if (
+                        characteristic.uuid ==
+                        HEART_RATE_CHARACTERISTIC_UUID
+                    ) {
 
-                .setSmallIcon(
-                    android.R.drawable.presence_heart
-                )
+                        val heartRate =
+                            value[1].toInt()
 
-                .build()
-
-        startForeground(
-            1,
-            notification
+                        println(
+                            "Heart Rate: $heartRate"
+                        )
+                    }
+                }
+            }
         )
     }
 
-    override fun onBind(
-        intent: Intent?
-    ): IBinder? = null
+    fun disconnect() {
+
+        bluetoothGatt?.disconnect()
+
+        bluetoothGatt?.close()
+    }
 }
