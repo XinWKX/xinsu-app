@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:orientation="vertical"
+
+    android:gravity="center"
+
+    android:background="#050505">
+
+    <!-- 标题 -->
+
+    <TextView
+        android:id="@+id/titleText"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="心宿 · 心率监测"
+
+        android:textColor="#FFFFFF"
+
+        android:textSize="28sp"
+
+        android:textStyle="bold"
+
+        android:layout_marginBottom="48dp"/>
+
+    <!-- BPM -->
+
+    <TextView
+        android:id="@+id/bpmText"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="--"
+
+        android:textColor="#00FF88"
+
+        android:textSize="92sp"
+
+        android:textStyle="bold"
+
+        android:layout_marginBottom="48dp"/>
+
+    <!-- 状态 -->
+
+    <TextView
+        android:id="@+id/statusText"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="等待连接设备"
+
+        android:textColor="#AAAAAA"
+
+        android:textSize="18sp"
+
+        android:layout_marginBottom="48dp"/>
+
+    <!-- 扫描按钮 -->
+
+    <Button
+        android:id="@+id/scanButton"
+
+        android:layout_width="260dp"
+        android:layout_height="58dp"
+
+        android:text="扫描心率设备"
+
+        android:textSize="18sp"
+
+        android:layout_marginBottom="20dp"/>
+
+    <!-- 演示模式 -->
+
+    <Button
+        android:id="@+id/demoButton"
+
+        android:layout_width="260dp"
+        android:layout_height="58dp"
+
+        android:text="演示模式"
+
+        android:textSize="18sp"
+
+        android:layout_marginBottom="20dp"/>
+
+    <!-- 导出日志 -->
+
+    <Button
+        android:id="@+id/exportButton"
+
+        android:layout_width="260dp"
+        android:layout_height="58dp"
+
+        android:text="导出错误日志"
+
+        android:textSize="18sp"/>
+
+</LinearLayout>
