@@ -1,52 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Android 12+ BLE 权限 -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <!-- 蓝牙 -->
 
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN" />
 
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Android 12+ BLE -->
 
-    <!-- 定位权限（部分 BLE 必需） -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN" />
 
-    <!-- Android 13 通知权限 -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- 定位 -->
+
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- 通知 -->
+
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- 网络 -->
-    <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- BLE 功能声明 -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
+
+    <!-- 前台服务 -->
+
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- BLE 功能 -->
+
     <uses-feature
         android:name="android.hardware.bluetooth_le"
-        android:required="true" />
+        android:required="true"/>
 
     <application
+
         android:name=".App"
-        
+
         android:allowBackup="true"
-        android:label="心宿"
+
+        android:icon="@mipmap/ic_launcher"
+
+        android:label="xinsu-heartrate-app"
+
+        android:roundIcon="@mipmap/ic_launcher_round"
+
         android:supportsRtl="true"
+
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
+        <!-- 主界面 -->
+
         <activity
+
             android:name=".MainActivity"
+
             android:exported="true">
 
             <intent-filter>
 
-                <action android:name="android.intent.action.MAIN" />
+                <action
+                    android:name="android.intent.action.MAIN"/>
 
                 <category
-                    android:name="android.intent.category.LAUNCHER" />
+                    android:name="android.intent.category.LAUNCHER"/>
 
             </intent-filter>
 
         </activity>
+
+        <!-- 后台服务 -->
+
+        <service
+
+            android:name=".HeartRateService"
+
+            android:foregroundServiceType="connectedDevice"
+
+            android:exported="false"/>
 
     </application>
 
