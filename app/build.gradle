@@ -67,15 +67,6 @@ android {
 
         viewBinding true
     }
-
-    applicationVariants.all { variant ->
-
-        variant.outputs.all {
-
-            outputFileName =
-                    "xinsu-heartrate-app.apk"
-        }
-    }
 }
 
 dependencies {
@@ -109,15 +100,4 @@ dependencies {
 
     androidTestImplementation
             'androidx.test.espresso:espresso-core:3.5.1'
-}
-
-tasks.whenTaskAdded { task ->
-
-    if (task.name.contains("assemble")) {
-
-        task.doLast {
-
-            println("APK 构建完成")
-        }
-    }
 }
