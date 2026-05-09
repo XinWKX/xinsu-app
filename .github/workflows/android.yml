@@ -15,7 +15,7 @@ jobs:
         run: sudo apt-get install unzip -y
 
       - name: 解压项目
-        run: unzip xinsu_optimized_project.zip.zip -d project
+        run: unzip xinsu-heartrate-app.zip -d project
 
       - name: 进入项目目录
         run: ls project
