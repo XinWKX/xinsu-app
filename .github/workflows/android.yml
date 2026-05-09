@@ -1,67 +1,55 @@
-name: Build APK
+name: Build xinsu-heartrate-app APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 获取仓库代码
+
+      # 拉取仓库
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 安装 unzip
-        run: sudo apt-get install unzip -y
-
-      - name: 解压项目
-        run: unzip xinsu-heartrate-app.zip -d project
-
-      - name: 进入项目目录
-        run: ls project
-
-      - name: 安装 Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: 安装 Java
+      # 安装 JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
+          cache: gradle
 
-      - name: 安装依赖
-        run: |
-          cd project
-          npm install || true
+      # Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: 安装 Capacitor
-        run: |
-          cd project
-          npm install @capacitor/core
-          npm install @capacitor/cli
-          npm install @capacitor/android
+      # Gradle 执行权限
+      - name: Grant Gradle Permission
+        run: chmod +x gradlew
 
-      - name: 同步安卓工程
-        run: |
-          cd project
-          npx cap sync android || true
+      # 清理旧缓存
+      - name: Clean Project
+        run: ./gradlew clean
 
-      - name: 升级 Gradle
-        run: |
-          cd project/android
-          sed -i 's/gradle-8.7-all.zip/gradle-8.13-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
-          sed -i 's/gradle-8.7-bin.zip/gradle-8.13-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+      # 编译 Debug APK
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: 编译 APK
-        run: |
-          cd project/android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: 上传 APK
+      # 上传 APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xinsu-apk
-          path: project/android/app/build/outputs/apk/debug/app-debug.apk
+          name: xinsu-heartrate-app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      # 输出 APK 路径
+      - name: APK Output Info
+        run: |
+          echo "APK generated:"
+          ls -R app/build/outputs/apk/debug/
