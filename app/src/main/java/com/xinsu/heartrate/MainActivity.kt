@@ -455,6 +455,8 @@ class MainActivity : AppCompatActivity() {
 
                         bpmText.text =
                             heartRate.toString()
+                            
+                        ecgView.setHeartRate(heartRate)
 
                         statusText.text =
                             "实时心率监测中"
