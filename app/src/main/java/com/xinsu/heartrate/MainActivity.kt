@@ -211,66 +211,88 @@ class MainActivity : AppCompatActivity() {
         }, interval)
     }
 
-    private fun playHeartbeatSound() {
+    private var audioTrack: AudioTrack? = null
 
-        Thread {
+private fun playHeartbeatSound() {
 
-            try {
+    try {
 
-                val sampleRate = 44100
+        val sampleRate = 44100
 
-                val duration = 80
+        val durationMs = 45
 
-                val numSamples =
-                    duration * sampleRate / 1000
+        val samplesCount =
+            sampleRate * durationMs / 1000
 
-                val samples =
-                    ShortArray(numSamples)
+        val samples =
+            ShortArray(samplesCount)
 
-                for (i in samples.indices) {
+        for (i in samples.indices) {
 
-                    val wave = sin(
-                        2.0 * Math.PI *
-                                i /
-                                (sampleRate / 85.0)
-                    )
+            val envelope =
+                1.0 - (
+                        i.toDouble() /
+                                samples.size
+                        )
 
-                    samples[i] =
-                        (
-                                wave *
-                                        Short.MAX_VALUE *
-                                        0.18
-                                ).toInt().toShort()
-                }
+            val wave =
+                sin(
+                    2.0 *
+                            Math.PI *
+                            140.0 *
+                            i /
+                            sampleRate
+                )
 
-                val audioTrack = AudioTrack(
-                    AudioManager.STREAM_MUSIC,
+            samples[i] = (
+                    wave *
+                            envelope *
+                            Short.MAX_VALUE *
+                            0.22
+                    ).toInt().toShort()
+        }
+
+        if (audioTrack == null) {
+
+            val bufferSize =
+                AudioTrack.getMinBufferSize(
+
                     sampleRate,
+
                     AudioFormat.CHANNEL_OUT_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                    samples.size * 2,
-                    AudioTrack.MODE_STATIC
+
+                    AudioFormat.ENCODING_PCM_16BIT
                 )
 
-                audioTrack.write(
-                    samples,
-                    0,
-                    samples.size
-                )
+            audioTrack = AudioTrack(
 
-                audioTrack.play()
+                AudioManager.STREAM_MUSIC,
 
-                Thread.sleep(120)
+                sampleRate,
 
-                audioTrack.release()
+                AudioFormat.CHANNEL_OUT_MONO,
 
-            } catch (e: Exception) {
+                AudioFormat.ENCODING_PCM_16BIT,
 
-                e.printStackTrace()
-            }
+                bufferSize,
 
-        }.start()
+                AudioTrack.MODE_STREAM
+            )
+
+            audioTrack?.play()
+        }
+
+        audioTrack?.write(
+            samples,
+            0,
+            samples.size
+        )
+
+    } catch (e: Exception) {
+
+        e.printStackTrace()
     }
+}
 
     private fun startBleScan() {
 
