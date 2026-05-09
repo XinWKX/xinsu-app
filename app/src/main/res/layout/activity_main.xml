@@ -55,6 +55,20 @@
 
         android:layout_gravity="center_horizontal"/>
 
+    <!-- ECG 波形 -->
+
+    <com.xinsu.heartrate.EcgView
+
+        android:id="@+id/ecgView"
+
+        android:layout_width="match_parent"
+
+        android:layout_height="220dp"
+
+        android:layout_marginTop="24dp"
+
+        android:layout_marginBottom="12dp"/>
+
     <!-- BPM区域 -->
 
     <LinearLayout
