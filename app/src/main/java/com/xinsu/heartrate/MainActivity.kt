@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var demoButton: Button
 
     private lateinit var exportButton: Button
+
+    private lateinit var settingsButton: Button
+    
     private lateinit var ecgView: EcgView
 
     private val handler =
