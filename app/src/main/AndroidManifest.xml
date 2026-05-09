@@ -4,9 +4,11 @@
 
     <!-- Android 12+ BLE 权限 -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- 定位权限（部分 BLE 必需） -->
@@ -18,9 +20,14 @@
     <!-- 网络 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- BLE 功能声明 -->
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
     <application
         android:allowBackup="true"
-        android:label="xinsu-heartrate-app"
+        android:label="心宿"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
@@ -29,9 +36,12 @@
             android:exported="true">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
         </activity>
