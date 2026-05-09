@@ -102,6 +102,9 @@ class MainActivity : AppCompatActivity() {
 
         exportButton =
             findViewById(R.id.exportButton)
+        
+        settingsButton =
+            findViewById(R.id.settingsButton)
 
         ecgView =
             findViewById(R.id.ecgView)
