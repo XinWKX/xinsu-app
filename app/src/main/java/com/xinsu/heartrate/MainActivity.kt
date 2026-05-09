@@ -1,6 +1,7 @@
 package com.xinsu.heartrate
 
 import android.Manifest
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
@@ -47,6 +48,9 @@ class MainActivity : AppCompatActivity() {
 
     private var bleScanner:
             BluetoothLeScanner? = null
+
+    private val scannedDevices =
+        mutableListOf<String>()
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -263,6 +267,8 @@ class MainActivity : AppCompatActivity() {
         statusText.text =
             "正在扫描设备..."
 
+        scannedDevices.clear()
+
         bleScanner =
             bluetoothAdapter!!
                 .bluetoothLeScanner
@@ -284,9 +290,45 @@ class MainActivity : AppCompatActivity() {
                         result.device.name
                             ?: "未知设备"
 
-                    statusText.text =
-                        "发现设备: $name"
+                    if (!scannedDevices.contains(name)) {
+
+                        scannedDevices.add(name)
+
+                        statusText.text =
+                            "发现设备: $name"
+
+                        showDeviceList()
+                    }
                 }
             }
         }
+
+    private fun showDeviceList() {
+
+        val items =
+            scannedDevices.toTypedArray()
+
+        AlertDialog.Builder(this)
+
+            .setTitle("发现的设备")
+
+            .setItems(items) { _, which ->
+
+                val selected =
+                    scannedDevices[which]
+
+                statusText.text =
+                    "已选择设备: $selected"
+
+                Toast.makeText(
+                    this,
+                    "后续将连接: $selected",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            .setNegativeButton("关闭", null)
+
+            .show()
+    }
 }
