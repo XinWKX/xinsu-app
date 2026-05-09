@@ -12,6 +12,9 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Bundle
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.view.animation.LinearInterpolator
 import android.os.Handler
 import android.os.Looper
 import android.widget.Button
@@ -37,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var exportButton: Button
 
     private lateinit var settingsButton: Button
-    
+
     private lateinit var ecgView: EcgView
 
     private val handler =
@@ -47,6 +50,13 @@ class MainActivity : AppCompatActivity() {
 
     private var demoRunning = false
 
+    private var soundEnabled = true
+
+    private var waveEnabled = true
+
+    private var bpmAnimator:
+        ObjectAnimator? = null
+
     private var bluetoothAdapter:
             BluetoothAdapter? = null
 
@@ -55,6 +65,8 @@ class MainActivity : AppCompatActivity() {
 
     private var bluetoothGatt:
             BluetoothGatt? = null
+
+    private var audioTrack: AudioTrack? = null
 
     private val scannedDevices =
         mutableListOf<BluetoothDevice>()
@@ -80,6 +92,10 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        Thread.setDefaultUncaughtExceptionHandler(
+            CrashHandler(this)
+        )
+
         val bluetoothManager =
             getSystemService(
                 Context.BLUETOOTH_SERVICE
@@ -102,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
         exportButton =
             findViewById(R.id.exportButton)
-        
+
         settingsButton =
             findViewById(R.id.settingsButton)
 
@@ -130,44 +146,50 @@ class MainActivity : AppCompatActivity() {
 
             try {
 
-    val file = java.io.File(
-        filesDir,
-        "crash_log.txt"
-    )
+                val file = java.io.File(
+                    filesDir,
+                    "crash_log.txt"
+                )
 
-    if (file.exists()) {
+                if (file.exists()) {
 
-        val text = file.readText()
+                    val text = file.readText()
 
-        android.app.AlertDialog.Builder(this)
+                    AlertDialog.Builder(this)
 
-            .setTitle("崩溃日志")
+                        .setTitle("崩溃日志")
 
-            .setMessage(text)
+                        .setMessage(text)
 
-            .setPositiveButton("关闭", null)
+                        .setPositiveButton(
+                            "关闭",
+                            null
+                        )
 
-            .show()
+                        .show()
 
-    } else {
+                } else {
 
-        Toast.makeText(
-            this,
-            "暂无崩溃日志",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+                    Toast.makeText(
+                        this,
+                        "暂无崩溃日志",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
 
-} catch (e: Exception) {
+            } catch (e: Exception) {
 
-    Toast.makeText(
-        this,
-        "读取日志失败",
-        Toast.LENGTH_SHORT
-    ).show()
+                Toast.makeText(
+                    this,
+                    "读取日志失败",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-                Toast.LENGTH_SHORT
-            ).show()
+        }
+
+        settingsButton.setOnClickListener {
+
+            showSettingsDialog()
         }
     }
 
@@ -203,9 +225,17 @@ class MainActivity : AppCompatActivity() {
         bpmText.text =
             currentBpm.toString()
 
-        ecgView.setHeartRate(currentBpm)
+        if (waveEnabled) {
 
-        playHeartbeatSound()
+            ecgView.setHeartRate(
+                currentBpm
+            )
+        }
+
+        if (soundEnabled) {
+
+            playHeartbeatSound()
+        }
 
         val interval =
             (60000f / currentBpm).toLong()
@@ -217,88 +247,86 @@ class MainActivity : AppCompatActivity() {
         }, interval)
     }
 
-    private var audioTrack: AudioTrack? = null
+    private fun playHeartbeatSound() {
 
-private fun playHeartbeatSound() {
+        try {
 
-    try {
+            val sampleRate = 44100
 
-        val sampleRate = 44100
+            val durationMs = 45
 
-        val durationMs = 45
+            val samplesCount =
+                sampleRate * durationMs / 1000
 
-        val samplesCount =
-            sampleRate * durationMs / 1000
+            val samples =
+                ShortArray(samplesCount)
 
-        val samples =
-            ShortArray(samplesCount)
+            for (i in samples.indices) {
 
-        for (i in samples.indices) {
+                val envelope =
+                    1.0 - (
+                            i.toDouble() /
+                                    samples.size
+                            )
 
-            val envelope =
-                1.0 - (
-                        i.toDouble() /
-                                samples.size
-                        )
+                val wave =
+                    sin(
+                        2.0 *
+                                Math.PI *
+                                140.0 *
+                                i /
+                                sampleRate
+                    )
 
-            val wave =
-                sin(
-                    2.0 *
-                            Math.PI *
-                            140.0 *
-                            i /
-                            sampleRate
-                )
+                samples[i] = (
+                        wave *
+                                envelope *
+                                Short.MAX_VALUE *
+                                0.22
+                        ).toInt().toShort()
+            }
 
-            samples[i] = (
-                    wave *
-                            envelope *
-                            Short.MAX_VALUE *
-                            0.22
-                    ).toInt().toShort()
-        }
+            if (audioTrack == null) {
 
-        if (audioTrack == null) {
+                val bufferSize =
+                    AudioTrack.getMinBufferSize(
 
-            val bufferSize =
-                AudioTrack.getMinBufferSize(
+                        sampleRate,
+
+                        AudioFormat.CHANNEL_OUT_MONO,
+
+                        AudioFormat.ENCODING_PCM_16BIT
+                    )
+
+                audioTrack = AudioTrack(
+
+                    AudioManager.STREAM_MUSIC,
 
                     sampleRate,
 
                     AudioFormat.CHANNEL_OUT_MONO,
 
-                    AudioFormat.ENCODING_PCM_16BIT
+                    AudioFormat.ENCODING_PCM_16BIT,
+
+                    bufferSize,
+
+                    AudioTrack.MODE_STREAM
                 )
 
-            audioTrack = AudioTrack(
+                audioTrack?.play()
+            }
 
-                AudioManager.STREAM_MUSIC,
-
-                sampleRate,
-
-                AudioFormat.CHANNEL_OUT_MONO,
-
-                AudioFormat.ENCODING_PCM_16BIT,
-
-                bufferSize,
-
-                AudioTrack.MODE_STREAM
+            audioTrack?.write(
+                samples,
+                0,
+                samples.size
             )
 
-            audioTrack?.play()
+        } catch (e: Exception) {
+
+            e.printStackTrace()
         }
-
-        audioTrack?.write(
-            samples,
-            0,
-            samples.size
-        )
-
-    } catch (e: Exception) {
-
-        e.printStackTrace()
     }
-}
 
     private fun startBleScan() {
 
@@ -518,15 +546,84 @@ private fun playHeartbeatSound() {
 
                         bpmText.text =
                             heartRate.toString()
-                            
-                        ecgView.setHeartRate(heartRate)
+
+                        if (waveEnabled) {
+
+                            ecgView.setHeartRate(
+                                heartRate
+                            )
+                        }
 
                         statusText.text =
                             "实时心率监测中"
 
-                        playHeartbeatSound()
+                        if (soundEnabled) {
+
+                            playHeartbeatSound()
+                        }
                     }
                 }
             }
         }
+
+    private fun showSettingsDialog() {
+
+        val view = layoutInflater.inflate(
+
+            R.layout.dialog_settings,
+            null
+        )
+
+        val soundSwitch =
+            view.findViewById<android.widget.Switch>(
+                R.id.soundSwitch
+            )
+
+        val waveSwitch =
+            view.findViewById<android.widget.Switch>(
+                R.id.waveSwitch
+            )
+
+        soundSwitch.isChecked =
+            soundEnabled
+
+        waveSwitch.isChecked =
+            waveEnabled
+
+        soundSwitch.setOnCheckedChangeListener {
+
+                _, isChecked ->
+
+            soundEnabled = isChecked
+        }
+
+        waveSwitch.setOnCheckedChangeListener {
+
+                _, isChecked ->
+
+            waveEnabled = isChecked
+        }
+
+        AlertDialog.Builder(this)
+
+            .setView(view)
+
+            .setPositiveButton(
+                "关闭",
+                null
+            )
+
+            .show()
+    }
+
+    override fun onDestroy() {
+
+        super.onDestroy()
+
+        audioTrack?.release()
+
+        audioTrack = null
+
+        bluetoothGatt?.close()
+    }
 }
