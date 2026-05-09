@@ -48,6 +48,12 @@ jobs:
           cd project
           npx cap sync android || true
 
+      - name: 升级 Gradle
+        run: |
+          cd project/android
+          sed -i 's/gradle-8.7-all.zip/gradle-8.13-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+          sed -i 's/gradle-8.7-bin.zip/gradle-8.13-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+
       - name: 编译 APK
         run: |
           cd project/android
