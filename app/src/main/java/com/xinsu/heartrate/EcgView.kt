@@ -25,11 +25,26 @@ class EcgView @JvmOverloads constructor(
         style = Paint.Style.STROKE
 
         isAntiAlias = true
+
+        setShadowLayer(
+            22f,
+            0f,
+            0f,
+            Color.GREEN
+        )
     }
 
     private var phase = 0f
 
     private var bpm = 72
+
+    init {
+
+        setLayerType(
+            LAYER_TYPE_SOFTWARE,
+            paint
+        )
+    }
 
     fun setHeartRate(newBpm: Int) {
 
@@ -85,10 +100,9 @@ class EcgView @JvmOverloads constructor(
             x += step
         }
 
-        val speed =
-            bpm / 6f
+        val speed = bpm / 6f
 
-        phase += speed
+        phase += speed * 0.65f
 
         if (phase > widthF) {
 
@@ -106,22 +120,17 @@ class EcgView @JvmOverloads constructor(
 
         return when {
 
-            t < 0.05f ->
-                0f
+            t < 0.05f -> 0f
 
-            t < 0.08f ->
-                2.2f
+            t < 0.08f -> 2.2f
 
-            t < 0.12f ->
-                -1.0f
+            t < 0.12f -> -1.0f
 
-            t < 0.16f ->
-                0.6f
+            t < 0.16f -> 0.6f
 
-            else ->
-                (
-                        sin(t * 20f) * 0.05f
-                        ).toFloat()
+            else -> (
+                    sin(t * 20f) * 0.05f
+                    ).toFloat()
         }
     }
 }
