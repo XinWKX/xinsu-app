@@ -29,6 +29,13 @@ class EcgView @JvmOverloads constructor(
 
     private var phase = 0f
 
+    private var bpm = 72
+
+    fun setHeartRate(newBpm: Int) {
+
+        bpm = newBpm
+    }
+
     override fun onDraw(canvas: Canvas) {
 
         super.onDraw(canvas)
@@ -78,7 +85,10 @@ class EcgView @JvmOverloads constructor(
             x += step
         }
 
-        phase += 12f
+        val speed =
+            bpm / 6f
+
+        phase += speed
 
         if (phase > widthF) {
 
@@ -100,13 +110,13 @@ class EcgView @JvmOverloads constructor(
                 0f
 
             t < 0.08f ->
-                1.8f
+                2.2f
 
             t < 0.12f ->
-                -0.8f
+                -1.0f
 
             t < 0.16f ->
-                0.4f
+                0.6f
 
             else ->
                 (
