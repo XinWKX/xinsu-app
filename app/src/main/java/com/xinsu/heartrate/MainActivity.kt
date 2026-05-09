@@ -2,8 +2,7 @@ package com.xinsu.heartrate
 
 import android.Manifest
 import android.app.AlertDialog
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -21,6 +20,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.util.UUID
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -49,8 +49,24 @@ class MainActivity : AppCompatActivity() {
     private var bleScanner:
             BluetoothLeScanner? = null
 
+    private var bluetoothGatt:
+            BluetoothGatt? = null
+
     private val scannedDevices =
-        mutableListOf<String>()
+        mutableListOf<BluetoothDevice>()
+
+    companion object {
+
+        val HEART_RATE_SERVICE_UUID: UUID =
+            UUID.fromString(
+                "0000180d-0000-1000-8000-00805f9b34fb"
+            )
+
+        val HEART_RATE_CHARACTERISTIC_UUID: UUID =
+            UUID.fromString(
+                "00002a37-0000-1000-8000-00805f9b34fb"
+            )
+    }
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -286,16 +302,17 @@ class MainActivity : AppCompatActivity() {
 
                 runOnUiThread {
 
-                    val name =
-                        result.device.name
-                            ?: "未知设备"
+                    val device =
+                        result.device
 
-                    if (!scannedDevices.contains(name)) {
+                    if (!scannedDevices.contains(device)) {
 
-                        scannedDevices.add(name)
+                        scannedDevices.add(device)
 
                         statusText.text =
-                            "发现设备: $name"
+                            "发现设备: ${
+                                device.name ?: "未知设备"
+                            }"
 
                         showDeviceList()
                     }
@@ -305,30 +322,140 @@ class MainActivity : AppCompatActivity() {
 
     private fun showDeviceList() {
 
-        val items =
-            scannedDevices.toTypedArray()
+        val names =
+            scannedDevices.map {
+
+                it.name ?: "未知设备"
+
+            }.toTypedArray()
 
         AlertDialog.Builder(this)
 
             .setTitle("发现的设备")
 
-            .setItems(items) { _, which ->
+            .setItems(names) { _, which ->
 
-                val selected =
+                val device =
                     scannedDevices[which]
 
-                statusText.text =
-                    "已选择设备: $selected"
-
-                Toast.makeText(
-                    this,
-                    "后续将连接: $selected",
-                    Toast.LENGTH_SHORT
-                ).show()
+                connectToDevice(device)
             }
 
             .setNegativeButton("关闭", null)
 
             .show()
     }
+
+    private fun connectToDevice(
+        device: BluetoothDevice
+    ) {
+
+        statusText.text =
+            "正在连接: ${
+                device.name ?: "未知设备"
+            }"
+
+        bluetoothGatt =
+            device.connectGatt(
+                this,
+                false,
+                gattCallback
+            )
+    }
+
+    private val gattCallback =
+        object : BluetoothGattCallback() {
+
+            override fun onConnectionStateChange(
+                gatt: BluetoothGatt,
+                status: Int,
+                newState: Int
+            ) {
+
+                runOnUiThread {
+
+                    if (newState ==
+                        BluetoothProfile.STATE_CONNECTED
+                    ) {
+
+                        statusText.text =
+                            "设备已连接"
+
+                        gatt.discoverServices()
+
+                    } else if (
+                        newState ==
+                        BluetoothProfile.STATE_DISCONNECTED
+                    ) {
+
+                        statusText.text =
+                            "设备已断开"
+                    }
+                }
+            }
+
+            override fun onServicesDiscovered(
+                gatt: BluetoothGatt,
+                status: Int
+            ) {
+
+                val service =
+                    gatt.getService(
+                        HEART_RATE_SERVICE_UUID
+                    )
+
+                val characteristic =
+                    service?.getCharacteristic(
+                        HEART_RATE_CHARACTERISTIC_UUID
+                    )
+
+                if (characteristic != null) {
+
+                    gatt.setCharacteristicNotification(
+                        characteristic,
+                        true
+                    )
+                }
+            }
+
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic
+            ) {
+
+                if (
+                    characteristic.uuid ==
+                    HEART_RATE_CHARACTERISTIC_UUID
+                ) {
+
+                    val flag =
+                        characteristic.properties
+
+                    val format =
+                        if (flag and 0x01 != 0)
+                            BluetoothGattCharacteristic.FORMAT_UINT16
+                        else
+                            BluetoothGattCharacteristic.FORMAT_UINT8
+
+                    val heartRate =
+                        characteristic.getIntValue(
+                            format,
+                            1
+                        ) ?: 0
+
+                    runOnUiThread {
+
+                        currentBpm = heartRate
+
+                        bpmText.text =
+                            heartRate.toString()
+
+                        statusText.text =
+                            "实时心率监测中"
+
+                        playHeartbeatSound()
+                    }
+                }
+            }
+        }
 }
