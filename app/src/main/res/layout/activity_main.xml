@@ -4,104 +4,153 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
+
     android:layout_height="match_parent"
 
     android:orientation="vertical"
 
-    android:gravity="center"
+    android:background="#050505"
 
-    android:background="#050505">
+    android:padding="24dp">
 
-    <!-- 标题 -->
+    <!-- 顶部标题 -->
 
     <TextView
+
         android:id="@+id/titleText"
 
         android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
 
-        android:text="心宿 · 心率监测"
+        android:text="心宿"
 
         android:textColor="#FFFFFF"
 
-        android:textSize="28sp"
+        android:textSize="34sp"
 
         android:textStyle="bold"
 
-        android:layout_marginBottom="48dp"/>
+        android:layout_marginTop="20dp"
 
-    <!-- BPM -->
-
-    <TextView
-        android:id="@+id/bpmText"
-
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:text="--"
-
-        android:textColor="#00FF88"
-
-        android:textSize="92sp"
-
-        android:textStyle="bold"
-
-        android:layout_marginBottom="48dp"/>
+        android:layout_gravity="center_horizontal"/>
 
     <!-- 状态 -->
 
     <TextView
+
         android:id="@+id/statusText"
 
         android:layout_width="wrap_content"
+
         android:layout_height="wrap_content"
 
         android:text="等待连接设备"
 
-        android:textColor="#AAAAAA"
+        android:textColor="#888888"
 
-        android:textSize="18sp"
+        android:textSize="16sp"
 
-        android:layout_marginBottom="48dp"/>
+        android:layout_marginTop="12dp"
 
-    <!-- 扫描按钮 -->
+        android:layout_gravity="center_horizontal"/>
 
-    <Button
-        android:id="@+id/scanButton"
+    <!-- BPM区域 -->
 
-        android:layout_width="260dp"
-        android:layout_height="58dp"
+    <LinearLayout
 
-        android:text="扫描心率设备"
+        android:layout_width="match_parent"
 
-        android:textSize="18sp"
+        android:layout_height="0dp"
 
-        android:layout_marginBottom="20dp"/>
+        android:layout_weight="1"
 
-    <!-- 演示模式 -->
+        android:gravity="center"
 
-    <Button
-        android:id="@+id/demoButton"
+        android:orientation="vertical">
 
-        android:layout_width="260dp"
-        android:layout_height="58dp"
+        <TextView
 
-        android:text="演示模式"
+            android:layout_width="wrap_content"
 
-        android:textSize="18sp"
+            android:layout_height="wrap_content"
 
-        android:layout_marginBottom="20dp"/>
+            android:text="BPM"
 
-    <!-- 导出日志 -->
+            android:textColor="#00FF88"
 
-    <Button
-        android:id="@+id/exportButton"
+            android:textSize="24sp"/>
 
-        android:layout_width="260dp"
-        android:layout_height="58dp"
+        <TextView
 
-        android:text="导出错误日志"
+            android:id="@+id/bpmText"
 
-        android:textSize="18sp"/>
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+
+            android:text="--"
+
+            android:textColor="#00FF88"
+
+            android:textSize="110sp"
+
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+    <!-- 底部按钮区域 -->
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+
+        android:layout_height="wrap_content"
+
+        android:orientation="vertical"
+
+        android:layout_marginBottom="24dp">
+
+        <Button
+
+            android:id="@+id/scanButton"
+
+            android:layout_width="match_parent"
+
+            android:layout_height="58dp"
+
+            android:text="扫描心率设备"
+
+            android:textSize="18sp"
+
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+
+            android:id="@+id/demoButton"
+
+            android:layout_width="match_parent"
+
+            android:layout_height="58dp"
+
+            android:text="演示模式"
+
+            android:textSize="18sp"
+
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+
+            android:id="@+id/exportButton"
+
+            android:layout_width="match_parent"
+
+            android:layout_height="58dp"
+
+            android:text="导出错误日志"
+
+            android:textSize="18sp"/>
+
+    </LinearLayout>
 
 </LinearLayout>
