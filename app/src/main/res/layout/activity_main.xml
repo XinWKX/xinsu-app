@@ -11,7 +11,7 @@
 
     android:padding="16dp">
 
-    <!-- 顶部状态 -->
+    <!-- 顶部状态文字 -->
 
     <TextView
         android:id="@+id/statusText"
@@ -24,15 +24,15 @@
 
         android:textColor="#00FF66"
 
-        android:textSize="16sp"
+        android:textSize="18sp"
 
         android:textStyle="bold"
 
         android:layout_centerHorizontal="true"
 
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="12dp"/>
 
-    <!-- ECG 波形 -->
+    <!-- ECG 区域 -->
 
     <com.xinsu.heartrate.EcgView
         android:id="@+id/ecgView"
@@ -47,7 +47,7 @@
 
         android:background="#050505"/>
 
-    <!-- BPM -->
+    <!-- BPM 数值 -->
 
     <TextView
         android:id="@+id/bpmText"
@@ -70,7 +70,7 @@
 
         android:layout_marginTop="22dp"/>
 
-    <!-- BPM Label -->
+    <!-- BPM 标签 -->
 
     <TextView
         android:id="@+id/bpmLabel"
@@ -91,7 +91,7 @@
 
         android:layout_marginTop="-6dp"/>
 
-    <!-- 按钮区域 -->
+    <!-- 底部按钮区域 -->
 
     <LinearLayout
 
@@ -107,7 +107,7 @@
 
         android:layout_marginBottom="18dp">
 
-        <!-- 第一排 -->
+        <!-- 第一排按钮 -->
 
         <LinearLayout
 
@@ -118,6 +118,8 @@
             android:orientation="horizontal"
 
             android:layout_marginBottom="12dp">
+
+            <!-- 扫描 -->
 
             <Button
                 android:id="@+id/scanButton"
@@ -143,6 +145,8 @@
 
                 android:layout_height="wrap_content"/>
 
+            <!-- 演示 -->
+
             <Button
                 android:id="@+id/demoButton"
 
@@ -163,7 +167,7 @@
                 android:backgroundTint="#0066CC"/>
         </LinearLayout>
 
-        <!-- 第二排 -->
+        <!-- 第二排按钮 -->
 
         <LinearLayout
 
@@ -172,6 +176,8 @@
             android:layout_height="wrap_content"
 
             android:orientation="horizontal">
+
+            <!-- 导出 -->
 
             <Button
                 android:id="@+id/exportButton"
@@ -196,6 +202,8 @@
                 android:layout_width="12dp"
 
                 android:layout_height="wrap_content"/>
+
+            <!-- 设置 -->
 
             <Button
                 android:id="@+id/settingsButton"
