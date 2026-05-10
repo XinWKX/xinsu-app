@@ -32,7 +32,7 @@
 
         android:layout_marginTop="12dp"/>
 
-    <!-- ECG 区域 -->
+    <!-- ECG 波形区域 -->
 
     <com.xinsu.heartrate.EcgView
         android:id="@+id/ecgView"
@@ -107,7 +107,7 @@
 
         android:layout_marginBottom="18dp">
 
-        <!-- 第一排按钮 -->
+        <!-- 第一排 -->
 
         <LinearLayout
 
@@ -136,9 +136,7 @@
 
                 android:textColor="#FFFFFF"
 
-                android:textSize="16sp"
-
-                android:backgroundTint="#00AA55"/>
+                android:textSize="16sp"/>
 
             <Space
                 android:layout_width="12dp"
@@ -162,12 +160,10 @@
 
                 android:textColor="#FFFFFF"
 
-                android:textSize="16sp"
-
-                android:backgroundTint="#0066CC"/>
+                android:textSize="16sp"/>
         </LinearLayout>
 
-        <!-- 第二排按钮 -->
+        <!-- 第二排 -->
 
         <LinearLayout
 
@@ -194,9 +190,7 @@
 
                 android:textColor="#FFFFFF"
 
-                android:textSize="16sp"
-
-                android:backgroundTint="#CC6600"/>
+                android:textSize="16sp"/>
 
             <Space
                 android:layout_width="12dp"
@@ -220,9 +214,7 @@
 
                 android:textColor="#FFFFFF"
 
-                android:textSize="16sp"
-
-                android:backgroundTint="#444444"/>
+                android:textSize="16sp"/>
         </LinearLayout>
 
     </LinearLayout>
