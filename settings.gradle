@@ -1,3 +1,5 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 pluginManagement {
 
     repositories {
@@ -12,10 +14,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
 
-    repositoriesMode.set(
-
-        RepositoriesMode.FAIL_ON_PROJECT_REPOS
-    )
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 
     repositories {
 
@@ -25,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "xinsu-heartrate-app"
+rootProject.name = "xinsu-app"
 
 include(":app")
