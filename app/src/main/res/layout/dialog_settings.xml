@@ -29,7 +29,7 @@
 
         android:layout_marginBottom="20dp"/>
 
-    <Switch
+    <CheckBox
 
         android:id="@+id/soundSwitch"
 
@@ -45,7 +45,7 @@
 
         android:layout_marginBottom="16dp"/>
 
-    <Switch
+    <CheckBox
 
         android:id="@+id/waveSwitch"
 
