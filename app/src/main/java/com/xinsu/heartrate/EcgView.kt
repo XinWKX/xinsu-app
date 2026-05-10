@@ -16,121 +16,163 @@ class EcgView @JvmOverloads constructor(
 
 ) : View(context, attrs) {
 
-    private val paint = Paint().apply {
+    private val linePaint = Paint().apply {
 
         color = Color.GREEN
 
-        strokeWidth = 5f
+        strokeWidth = 4f
 
         style = Paint.Style.STROKE
 
         isAntiAlias = true
+    }
 
-        setShadowLayer(
-            22f,
-            0f,
-            0f,
-            Color.GREEN
-        )
+    private val gridPaint = Paint().apply {
+
+        color = Color.argb(40, 0, 255, 0)
+
+        strokeWidth = 1f
     }
 
     private var phase = 0f
 
-    private var bpm = 72
+    private var heartRate = 72
 
-    init {
+    /**
+     * 设置心率
+     */
+    fun setHeartRate(bpm: Int) {
 
-        setLayerType(
-            LAYER_TYPE_SOFTWARE,
-            paint
-        )
-    }
+        heartRate = bpm
 
-    fun setHeartRate(newBpm: Int) {
-
-        bpm = newBpm
+        invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
 
         super.onDraw(canvas)
 
-        val centerY = height / 2f
+        val w = width.toFloat()
 
-        val widthF = width.toFloat()
+        val h = height.toFloat()
 
-        val step = 8f
+        // 背景
+        canvas.drawColor(Color.BLACK)
 
-        var x = 0f
+        // 网格
+        drawGrid(canvas, w, h)
 
-        while (x < widthF) {
+        // ECG 波形
+        drawWave(canvas, w, h)
 
-            val normalized =
-                (x + phase) / widthF
-
-            val ecg =
-                generateEcgWave(normalized)
-
-            val y =
-                centerY - ecg * 180f
-
-            if (x > 0f) {
-
-                val prevNorm =
-                    (x - step + phase) / widthF
-
-                val prevEcg =
-                    generateEcgWave(prevNorm)
-
-                val prevY =
-                    centerY - prevEcg * 180f
-
-                canvas.drawLine(
-
-                    x - step,
-                    prevY,
-
-                    x,
-                    y,
-
-                    paint
-                )
-            }
-
-            x += step
-        }
-
-        val speed = bpm / 6f
-
-        phase += speed * 0.65f
-
-        if (phase > widthF) {
-
-            phase = 0f
-        }
+        // 动画
+        phase += heartRate * 0.015f
 
         postInvalidateDelayed(16)
     }
 
-    private fun generateEcgWave(
-        x: Float
-    ): Float {
+    /**
+     * 绘制背景网格
+     */
+    private fun drawGrid(
 
-        val t = x % 1f
+        canvas: Canvas,
 
-        return when {
+        w: Float,
 
-            t < 0.05f -> 0f
+        h: Float
+    ) {
 
-            t < 0.08f -> 2.2f
+        val step = 40f
 
-            t < 0.12f -> -1.0f
+        var x = 0f
 
-            t < 0.16f -> 0.6f
+        while (x < w) {
 
-            else -> (
-                    sin(t * 20f) * 0.05f
+            canvas.drawLine(
+
+                x,
+                0f,
+                x,
+                h,
+                gridPaint
+            )
+
+            x += step
+        }
+
+        var y = 0f
+
+        while (y < h) {
+
+            canvas.drawLine(
+
+                0f,
+                y,
+                w,
+                y,
+                gridPaint
+            )
+
+            y += step
+        }
+    }
+
+    /**
+     * 绘制 ECG 波形
+     */
+    private fun drawWave(
+
+        canvas: Canvas,
+
+        w: Float,
+
+        h: Float
+    ) {
+
+        val centerY = h / 2
+
+        var lastX = 0f
+
+        var lastY = centerY
+
+        val amplitude = 90f
+
+        var x = 0f
+
+        while (x < w) {
+
+            val progress =
+                (x / w) * 6.28f + phase
+
+            var y = centerY
+
+            // ECG 尖峰
+            y -= (
+                    sin(progress) *
+                            amplitude *
+                            0.15f
                     ).toFloat()
+
+            if (progress % 6.28f in 2.8f..3.0f) {
+
+                y -= amplitude
+            }
+
+            canvas.drawLine(
+
+                lastX,
+                lastY,
+                x,
+                y,
+                linePaint
+            )
+
+            lastX = x
+
+            lastY = y
+
+            x += 6f
         }
     }
 }
