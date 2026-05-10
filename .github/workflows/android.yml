@@ -1,4 +1,4 @@
-name: Android CI
+name: Build APK
 
 on:
   workflow_dispatch:
@@ -17,11 +17,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Download Gradle 8.2
-        run: |
-          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
-          unzip gradle-8.2-bin.zip
+      - name: Grant Permission
+        run: chmod +x gradlew
 
-      - name: Generate Wrapper
-        run: |
-          ./gradle-8.2/bin/gradle wrapper
+      - name: Build APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: xinsu-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
