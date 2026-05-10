@@ -669,12 +669,12 @@ class MainActivity : AppCompatActivity() {
         )
 
         val soundSwitch =
-            view.findViewById<android.widget.Switch>(
+            view.findViewById<android.widget.CheckBox>(
                 R.id.soundSwitch
             )
 
         val waveSwitch =
-            view.findViewById<android.widget.Switch>(
+            view.findViewById<android.widget.CheckBox>(
                 R.id.waveSwitch
             )
 
