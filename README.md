@@ -213,7 +213,7 @@ ECG visualization and heart rate display are simulated or entertainment-oriented
 
 License
 
-MIT License
+XinWKX
 
 
 ---
