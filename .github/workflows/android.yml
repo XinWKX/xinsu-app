@@ -18,12 +18,19 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
+
+      - name: Install Gradle
+        run: |
+          sudo apt update
+          sudo apt install gradle -y
+
+      - name: Generate Wrapper
+        run: gradle wrapper --gradle-version 8.2
 
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Build APK
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
