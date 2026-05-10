@@ -68,7 +68,7 @@ class EcgView @JvmOverloads constructor(
         // 动画
         phase += heartRate * 0.015f
 
-        postInvalidateDelayed()
+        postInvalidateOnAnimation()
     }
 
     /**
