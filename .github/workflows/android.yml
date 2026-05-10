@@ -26,15 +26,3 @@ jobs:
 
       - name: Generate Wrapper
         run: gradle wrapper --gradle-version 8.2
-
-      - name: Grant execute permission
-        run: chmod +x gradlew
-
-      - name: Build Wrapper
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: xinsu-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
