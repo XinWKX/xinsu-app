@@ -55,6 +55,8 @@ kotlinOptions {
 buildFeatures {
 
     viewBinding true
+
+    dataBinding false
 }
 
 }
